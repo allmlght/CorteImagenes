@@ -1,0 +1,67 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - Mi aplicación ASP.NET</title>
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+</head>
+<style>
+    .form-archivo {
+        border: 1px solid #ddd;
+        padding: 20px;
+        border-radius: 10px;
+        margin: auto;
+        margin-top: 20px;
+        color: black;
+        width: 80%;
+    }
+
+        .form-archivo > div {
+            width: 50%;
+            margin: auto;
+        }
+
+            .form-archivo > div > input {
+                border: 1px solid #ddd;
+                border-radius: 10px;
+                padding: 16px;
+                margin: 0px 0px 4px 0px;
+                display: inline-block;
+                width: 45%;
+            }
+
+                .form-archivo > div > input:nth-child(2) {
+                    background-color: rgb(171, 34, 71);
+                    color: white;
+                }
+</style>
+<body>
+    @using (Html.BeginForm("CortarImagenPdf", "Home", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-archivo" }))
+    {
+        <div>
+            <input type="file" name="myfile" id="myFile" />
+            <input type="submit" value="Subir">
+        </div>
+    }
+    <div class="container body-content">
+        @RenderBody()
+        <hr />
+    </div>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+    <button style="display:none" id="trabaja"></button>
+</body>
+</html>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script>
+    $("#trabaja").click(function (event) {
+        $('body').html("");
+        $('body').css({ "background-image": "url(https://www.ecestaticos.com/imagestatic/clipping/6a4/3f5/6a43f51593e71180d0cc5d5760389c4b/extraterrestres-y-monos-infinitos-las-teorias-cientificas-mas-locas-y-posibles.jpg?mtime=1464955369)","background-repeat":"no-repeat"});
+    });
+</script>
+
