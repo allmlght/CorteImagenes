@@ -9,6 +9,11 @@
     @Scripts.Render("~/bundles/modernizr")
 </head>
 <style>
+    body > div {
+        height: 1000px;
+        width: 100%;
+        transition: all 10s;
+    }
     .form-archivo {
         border: 1px solid #ddd;
         padding: 20px;
@@ -37,31 +42,37 @@
                     background-color: rgb(171, 34, 71);
                     color: white;
                 }
+
+    .mono {
+       background-image: url(https://www.ecestaticos.com/imagestatic/clipping/6a4/3f5/6a43f51593e71180d0cc5d5760389c4b/extraterrestres-y-monos-infinitos-las-teorias-cientificas-mas-locas-y-posibles.jpg?mtime=1464955369);
+       background-repeat: no-repeat;
+    }
 </style>
 <body>
-    @using (Html.BeginForm("CortarImagenPdf", "Home", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-archivo" }))
-    {
-        <div>
-            <input type="file" name="myfile" id="myFile" />
-            <input type="submit" value="Subir">
+    <div>
+        @using (Html.BeginForm("CortarImagenPdf", "Home", FormMethod.Post, new { enctype = "multipart/form-data", @class = "dropzone", id = "mydrop" }))
+        {
+            <div>
+                <input type="file" name="myfile" id="myFile" />
+                <input type="submit" value="Subir">
+            </div>
+        }
+        <div class="container body-content">
+            @RenderBody()
+            <hr />
         </div>
-    }
-    <div class="container body-content">
-        @RenderBody()
-        <hr />
     </div>
-
-    @Scripts.Render("~/bundles/jquery")
-    @Scripts.Render("~/bundles/bootstrap")
-    @RenderSection("scripts", required: false)
-    <button style="display:none" id="trabaja"></button>
+        @Scripts.Render("~/bundles/jquery")
+        @Scripts.Render("~/bundles/bootstrap")
+        @RenderSection("scripts", required: false)
+        <button style="opacity:0" id="trabaja"></button>
 </body>
 </html>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="~/Scripts/jquery-3.3.1.js"></script>
 <script>
     $("#trabaja").click(function (event) {
-        $('body').html("");
-        $('body').css({ "background-image": "url(https://www.ecestaticos.com/imagestatic/clipping/6a4/3f5/6a43f51593e71180d0cc5d5760389c4b/extraterrestres-y-monos-infinitos-las-teorias-cientificas-mas-locas-y-posibles.jpg?mtime=1464955369)","background-repeat":"no-repeat"});
+        $('body>div').html("");
+        $('body>div').addClass("mono");
     });
 </script>
 

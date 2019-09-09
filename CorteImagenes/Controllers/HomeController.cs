@@ -36,83 +36,79 @@ namespace CorteImagenes.Controllers
         [HttpPost]
         public ActionResult CortarImagenPdf()
         {
+            string folderPath = @"D:/PdfToImages/" + (DateTime.Now.ToString()).Replace(":", "-");
+            Directory.CreateDirectory(folderPath);
+            string zipPath = folderPath + "/" + "PdfToImages.zip";
             try
             {
                 var file = Request.Files[0];
-                var constructorInfo = typeof(HttpPostedFile).GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance)[0];
-                var obj = (HttpPostedFile)constructorInfo
-                          .Invoke(new object[] { file.FileName, file.ContentType, file.InputStream });
-
-
-                HttpPostedFile filePosted = obj;
-                string filePath = "";
-                if (filePosted != null && filePosted.ContentLength > 0)
+                if (file.ContentType == "application/pdf")
                 {
-                    string fileNameApplication = System.IO.Path.GetFileName(filePosted.FileName);
-                    string fileExtensionApplication = System.IO.Path.GetExtension(fileNameApplication);
+                    var constructorInfo = typeof(HttpPostedFile).GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance)[0];
+                    var obj = (HttpPostedFile)constructorInfo
+                              .Invoke(new object[] { file.FileName, file.ContentType, file.InputStream });
 
-                    // generating a random guid for a new file at server for the uploaded file
-                    string newFile = Guid.NewGuid().ToString() + fileExtensionApplication;
-                    // getting a valid server path to save
-
-                    filePath = System.IO.Path.Combine(@"D:/PdfToImages", newFile);
-
-                    if (fileNameApplication != String.Empty)
+                    HttpPostedFile filePosted = obj;
+                    string filePath = "";
+                    if (filePosted != null && filePosted.ContentLength > 0)
                     {
-                        filePosted.SaveAs(filePath);
+                        string fileNameApplication = System.IO.Path.GetFileName(filePosted.FileName);
+                        string fileExtensionApplication = System.IO.Path.GetExtension(fileNameApplication);
+
+                        // generating a random guid for a new file at server for the uploaded file
+                        string newFile = fileNameApplication;
+                        // getting a valid server path to save
+
+                        filePath = System.IO.Path.Combine(folderPath, newFile);
+
+                        if (fileNameApplication != String.Empty)
+                        {
+                            filePosted.SaveAs(filePath);
+                        }
+                    }
+
+                    var xDpi = 192; //set the x DPI
+                    var yDpi = 192; //set the y DPI
+
+                    using (var rasterizer = new GhostscriptRasterizer()) //create an instance for GhostscriptRasterizer
+                    {
+                        rasterizer.Open(filePath); //opens the PDF file for rasterizing
+                        int frameNum = rasterizer.PageCount;
+
+                        //set the output image(png's) complete path
+                        var outputPNGPath = Path.Combine(filePath, string.Format("{0}.png", folderPath));
+
+                        //converts the PDF pages to png's 
+                        for (int i = 1; i < frameNum + 1; i++)
+                        {
+                            var pdf2PNG = rasterizer.GetPage(xDpi, yDpi, i);
+                            //save the png's
+                            pdf2PNG.Save(folderPath + "\\" + Convert.ToString(i) + ".jpg", ImageFormat.Jpeg);
+                            //pdf2PNG.Save("C:/PdfToImages", ImageFormat.Png);
+                        }
+
+                        rasterizer.Close();
+                        using (ZipFile zip = new ZipFile())
+                        {
+                            zip.AddDirectory(folderPath);
+                            zip.Save(zipPath);
+                        }
+                        Byte[] bytes = System.IO.File.ReadAllBytes(zipPath);
+                        Directory.Delete(folderPath, true);
+
+                        //return RedirectToAction("Index");
+                        return File(bytes, System.Net.Mime.MediaTypeNames.Application.Octet, file.FileName + ".zip");
                     }
                 }
-
-                var xDpi = 192; //set the x DPI
-                var yDpi = 192; //set the y DPI
-
-
-
-                using (var rasterizer = new GhostscriptRasterizer()) //create an instance for GhostscriptRasterizer
+                else
                 {
-                    rasterizer.Open(filePath); //opens the PDF file for rasterizing
-                    int frameNum = rasterizer.PageCount;
-
-                    //set the output image(png's) complete path
-                    var outputPNGPath = Path.Combine(filePath, string.Format("{0}.png", @"D:/PdfToImages"));
-
-                    //converts the PDF pages to png's 
-                    for (int i = 1; i < frameNum; i++)
-                    {
-
-                        var pdf2PNG = rasterizer.GetPage(xDpi, yDpi, i);
-
-                        //save the png's
-                        pdf2PNG.Save("D:/PdfToImages" + "\\" + Convert.ToString(i) + ".jpg", ImageFormat.Jpeg);
-                        //pdf2PNG.Save("C:/PdfToImages", ImageFormat.Png);
-                    }
-
-                    rasterizer.Close();
-                    using (ZipFile zip = new ZipFile())
-                    {
-                        zip.AddDirectory(@"D:/PdfToImages");
-                        zip.Save(@"D:/PdfToImages/PdfToImages.zip");
-                    }
-                    Byte[] bytes = System.IO.File.ReadAllBytes(@"D:/PdfToImages/PdfToImages.zip");
-                    var directorio = new DirectoryInfo(@"D:/PdfToImages");
-                    var archivos = directorio.GetFiles();
-                    foreach (var archivo in archivos)
-                    {
-                        System.IO.File.Delete(archivo.FullName);
-                    }
-
-                    //return RedirectToAction("Index");
-                    return File(bytes, System.Net.Mime.MediaTypeNames.Application.Octet, "Pdf_images.zip");
+                    Directory.Delete(folderPath, true);
+                    return RedirectToAction("Index");
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                var directorio = new DirectoryInfo(@"D:/PdfToImages");
-                var archivos = directorio.GetFiles();
-                foreach (var archivo in archivos)
-                {
-                    System.IO.File.Delete(archivo.FullName);
-                }
+                Directory.Delete(folderPath, true);
                 return RedirectToAction("Index");
             }
 
